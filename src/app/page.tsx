@@ -1,101 +1,157 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+
+const Page = () => {
+  const [helloMessage, setHelloMessage] = useState<string>("");
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [sumResult, setSumResult] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("");
+
+  const fetchHelloMessage = async () => {
+    const response = await fetch("http://localhost:3000/api/hello");
+    const message = await response.text();
+    setHelloMessage(message);
+  };
+
+  const fetchUserInfo = async (id: string, name: string, email: string) => {
+    const response = await fetch(`http://localhost:3000/api/user/${id}/Name/${name}/Email/${email}`);
+    const user = await response.json();
+    setUserInfo(user);
+  };
+
+  const fetchProducts = async () => {
+    const response = await fetch("http://localhost:3000/api/products");
+    const data = await response.json();
+    setProducts(data);
+  };
+
+  const fetchSum = async (a: string, b: string) => {
+    const response = await fetch(`http://localhost:3000/api/sum/${a}/${b}`);
+    const result = await response.json();
+    setSumResult(`Sum of ${result.a} and ${result.b} is ${result.sum}`);
+  };
+
+  const fetchImage = async () => {
+    const response = await fetch("http://localhost:3000/api/image");
+    const blob = await response.blob();
+    setImageUrl(URL.createObjectURL(blob));
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="container mx-auto p-4 bg-gray-100 text-gray-800">
+      <header className="mb-8">
+        <h1 className="text-4xl font-bold text-center">API Demo</h1>
+      </header>
+      <main>
+        {/* Welcome Message */}
+        <section className="mb-8">
+          <button
+            onClick={fetchHelloMessage}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Get Welcome Message
+          </button>
+          <p className="mt-4">{helloMessage}</p>
+        </section>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        {/* User Information */}
+        <section className="mb-8">
+          <input
+            id="userId"
+            placeholder="User ID"
+            className="border p-2 rounded mb-2"
+          />
+          <input
+            id="userName"
+            placeholder="User Name"
+            className="border p-2 rounded mb-2"
+          />
+          <input
+            id="userEmail"
+            placeholder="User Email"
+            className="border p-2 rounded mb-2"
+          />
+          <button
+            onClick={() =>
+              fetchUserInfo(
+                (document.getElementById("userId") as HTMLInputElement).value,
+                (document.getElementById("userName") as HTMLInputElement).value,
+                (document.getElementById("userEmail") as HTMLInputElement).value
+              )
+            }
+            className="bg-blue-500 text-white px-4 py-2 rounded"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Get User Info
+          </button>
+          {userInfo && (
+            <div className="mt-4">
+              <p>ID: {userInfo.id}</p>
+              <p>Name: {userInfo.Name}</p>
+              <p>Email: {userInfo.Email}</p>
+            </div>
+          )}
+        </section>
+
+        {/* Products */}
+        <section className="mb-8">
+          <button
+            onClick={fetchProducts}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
           >
-            Read our docs
-          </a>
-        </div>
+            Get Products
+          </button>
+          <ul className="mt-4">
+            {products.map((product) => (
+              <li key={product.id}>
+                ID: {product.id}, Name: {product.name}, Price: ${product.price}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Sum of Two Numbers */}
+        <section className="mb-8">
+          <input
+            id="numA"
+            placeholder="Enter number A"
+            type="number"
+            className="border p-2 rounded mb-2"
+          />
+          <input
+            id="numB"
+            placeholder="Enter number B"
+            type="number"
+            className="border p-2 rounded mb-2"
+          />
+          <button
+            onClick={() =>
+              fetchSum(
+                (document.getElementById("numA") as HTMLInputElement).value,
+                (document.getElementById("numB") as HTMLInputElement).value
+              )
+            }
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Get Sum
+          </button>
+          <p className="mt-4">{sumResult}</p>
+        </section>
+
+        {/* Image */}
+        <section className="mb-8">
+          <button
+            onClick={fetchImage}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Get Image
+          </button>
+          {imageUrl && <img src={imageUrl} alt="Fetched Image" className="mt-4" />}
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
-}
+};
+
+export default Page;
